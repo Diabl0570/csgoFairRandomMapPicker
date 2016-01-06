@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html ng-app="demo">
+
+<head>
+  <style>
+    a {
+      font-size: 300%;
+    }
+    .marginThisDiv
+    {
+      margin-left:20px;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+  <script data-require="jquery@2.0.1" data-semver="2.0.1" src="http://code.jquery.com/jquery-2.0.1.min.js"></script>
+  <script data-require="jqueryui@1.9.2" data-semver="1.9.2" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+  <script data-require="angular.js@1.1.5" data-semver="1.1.5" src="http://code.angularjs.org/1.1.5/angular.min.js"></script>
+  <script>
+    angular.module('demo', []).controller('MainCtrl', function(
+      $scope
+    ) {
+		var host = "ws://xijezo.nl:64000"; // SET THIS TO YOUR SERVER
+		$scope.socket = new WebSocket(host);
+      $scope.winner = "??";
+	  $scope.message = "Hello";
+      $scope.items = [{
+        name: 'mirage'
+      }, {
+        name: 'dust2'
+      }, {
+        name: 'nuke'
+      }, {
+        name: 'cobble'
+      }, {
+        name: 'overpass'
+      }, {
+        name: 'inferno'
+      }, {
+        name: 'train'
+      }, {
+        name: 'cache'
+      }];
+      $scope.selectMap = function() {
+        var selectedMaps = $(':checkbox').filter(':checked');
+        var winningMapIndex = Math.floor(Math.random() * selectedMaps.length);
+        console.log(selectedMaps[winningMapIndex].value);
+        $scope.winner = selectedMaps[winningMapIndex].value;
+		$scope.message = selectedMaps[winningMapIndex].value;
+		$scope.send();
+      };
+      $scope.SelectNon = function() {
+        $(':checkbox').removeAttr("checked");
+        console.log("selectNON");
+      }
+      $scope.SelectAll = function() {
+        $(':checkbox').prop('checked', "true");
+        console.log("selectAll");
+      }
+	 
+	
+	try {
+		
+		console.log('WebSocket - status '+$scope.socket.readyState);
+		$scope.socket.onopen    = function(msg) { 
+							   console.log("Welcome - status "+this.readyState); 
+						   };
+		$scope.socket.onmessage = function(msg) { 
+		    if(msg.data="")
+		    {
+		      console.log("someone joined");
+		    }else
+		    {
+								$scope.winner = msg.data;
+								$("#winner").html(msg.data);
+							   console.log("Received: "+msg.data); 
+		    }			   
+						   };
+		$scope.socket.onclose   = function(msg) { 
+							   console.log("Disconnected - status "+this.readyState); 
+						   };
+	}
+	catch(ex){ 
+		console.log(ex); 
+	}
+	  
+	  
+	  
+	$scope.send = function(){
+		var txt,msg;
+		//txt = $("msg");
+		msg = $scope.message;//txt.value;
+		if(!msg) { 
+			alert("Message can not be empty"); 
+			return; 
+		}
+		//txt.value="";
+		//txt.focus();
+		try { 
+			$scope.socket.send(msg); 
+			console.log('Sent: '+msg); 
+		} catch(ex) { 
+			console.log(ex); 
+		}
+	}
+	$scope.quit = function(){
+		if (socket != null) {
+			console.log("Goodbye!");
+			$scope.socket.close();
+			socket=null;
+		}
+	}
+
+	$scope.reconnect = function() {
+		quit();
+		init();
+	}
+    });
+  </script>
+</head>
+
+<body ng-controller="MainCtrl">
+  <div class="marginThisDiv">
+    <h1>De Frietzaak's map selector</h1> 
+      <div>
+          <button ng-click="SelectAll()">Select All</button>
+          <button ng-click="SelectNon()">Select Non</button>
+      </div>
+      <div ng-repeat="item in items">
+        <label>
+          <input type="checkbox" value="{{item.name}}" checked="checked" id="{{item.name}}" /> 
+          {{item.name}}
+          </label>
+      </div>
+    <p>
+      Winner = <h1 id="winner">{{winner}}</h1>
+      <br/>
+		
+      <button type="button" class="btn btn-default btn-success" aria-label="Left Align" ng-click="selectMap()">
+        <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Click to get a random map
+      </button>
+    </p>
+	<button ng-click="send()"  class="hide"> Send</button>
+  </div>
+</body>
+
+</html>
