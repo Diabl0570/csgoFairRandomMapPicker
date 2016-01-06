@@ -7,20 +7,43 @@ class echoServer extends WebSocketServer {
   //protected $maxBufferSize = 1048576; //1MB... overkill for an echo server, but potentially plausible for other applications.
   private $userList = array();
   
-  protected function process($user, $message) {
-	 if(count($this->userList)>0)
-	 {
-		 $this->stdout("meer dan0");
-		  foreach($this->userList as $u)
-		  {
-				$this->send($u,$message);
-		  }
-	 }
-	 else
-	 {
-		 $this->send($user,$message);
-	 }
-  }
+  private $commandos = array(
+        "!de_dust" => "Dust II",
+        "!de_cble" => "Cobblestone",
+        "!de_mira" => "Mirage",
+    );
+  
+  protected function process($user, $message)
+    {
+        $this->stdout($message);
+        if (substr($message, 0, 1) === "!") {
+
+            if(array_key_exists($message, $this->commandos))
+            {
+                $this->commandoex = "Select: ".$this->commandos[$message];
+            }
+            else{
+                $this->commandoex = "Commando not recognized";
+            }
+            if (count($this->userList) > 0) {
+                foreach ($this->userList as $u) {
+                    $this->send($u, "!".$user->id.", ".$this->commandoex);
+                }
+            } else {
+                $this->send($u, "!".$user->id.", Select: ".$this->commandoex);
+            }
+        }
+        else {
+            if (count($this->userList) > 0) {
+                foreach ($this->userList as $u) {
+                    $this->send($u, "User" . $user->id . " says: " . $message);
+                }
+            } else {
+                $this->send($user, "User" . $user->id . " says: " . $message);
+            }
+        }
+    }
+
   
   protected function connected ($user) {
     // Do nothing: This is just an echo server, there's no need to track the user.
