@@ -11,14 +11,14 @@ class echoServer extends WebSocketServer {
 	 if(count($this->userList)>0)
 	 {
 		 $this->stdout("meer dan0");
-	  foreach($this->userList as $u)
-	  {
-			$this->send($u,"User ".$user->id." says: ".$message);
-	  }
+		  foreach($this->userList as $u)
+		  {
+				$this->send($u,$message);
+		  }
 	 }
 	 else
 	 {
-		 $this->send($user,"User ".$user->id." says: ".$message);
+		 $this->send($user,$message);
 	 }
   }
   
