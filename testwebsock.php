@@ -16,32 +16,13 @@ class echoServer extends WebSocketServer {
   protected function process($user, $message)
     {
         $this->stdout($message);
-        if (substr($message, 0, 1) === "!") {
-
-            if(array_key_exists($message, $this->commandos))
-            {
-                $this->commandoex = "Select: ".$this->commandos[$message];
-            }
-            else{
-                $this->commandoex = "Commando not recognized";
-            }
-            if (count($this->userList) > 0) {
+        if (count($this->userList) > 0) {
                 foreach ($this->userList as $u) {
-                    $this->send($u, "!".$user->id.", ".$this->commandoex);
+                    $this->send($u, $message);
                 }
             } else {
-                $this->send($u, "!".$user->id.", Select: ".$this->commandoex);
+                $this->send($user, $message);
             }
-        }
-        else {
-            if (count($this->userList) > 0) {
-                foreach ($this->userList as $u) {
-                    $this->send($u, "User" . $user->id . " says: " . $message);
-                }
-            } else {
-                $this->send($user, "User" . $user->id . " says: " . $message);
-            }
-        }
     }
 
   

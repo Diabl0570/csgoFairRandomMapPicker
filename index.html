@@ -24,21 +24,29 @@
       $scope.winner = "??";
 	  $scope.message = "Hello";
       $scope.items = [{
-        name: 'mirage'
+        name: 'mirage',
+		checked: true
       }, {
-        name: 'dust2'
+        name: 'dust2',
+		checked: true
       }, {
-        name: 'nuke'
+        name: 'nuke',
+		checked: true
       }, {
-        name: 'cobble'
+        name: 'cobble',
+		checked: true
       }, {
-        name: 'overpass'
+        name: 'overpass',
+		checked: true
       }, {
-        name: 'inferno'
+        name: 'inferno',
+		checked: true
       }, {
-        name: 'train'
+        name: 'train',
+		checked: true
       }, {
-        name: 'cache'
+        name: 'cache',
+		checked: true
       }];
       $scope.selectMap = function() {
         var selectedMaps = $(':checkbox').filter(':checked');
@@ -127,7 +135,7 @@
       </div>
       <div ng-repeat="item in items">
         <label>
-          <input type="checkbox" value="{{item.name}}" checked="checked" id="{{item.name}}" /> 
+          <input type="checkbox" value="{{item.name}}" checked="{{item.checked}}" id="{{item.name}}" /> 
           {{item.name}}
           </label>
       </div>
