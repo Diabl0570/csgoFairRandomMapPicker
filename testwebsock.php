@@ -12,19 +12,45 @@ class echoServer extends WebSocketServer {
         "!de_cble" => "Cobblestone",
         "!de_mira" => "Mirage",
     );
+  private $mapPool = array(
+	"0" => array("name" => 'mirage',"checked" => true),
+	"1" => array("name" => 'dust2',"checked" => true),
+	"2" => array("name" => 'nuke',"checked" => true),
+	"3" => array("name" => 'cobble',"checked" => true),
+	"4" => array("name" => 'overpass',"checked" => true),
+	"5" => array("name" => 'inferno',"checked" => true),
+	"6" => array("name" => 'train',"checked" => true),
+	"7" => array("name" => 'cache',"checked" => true)	
+  );
   
   protected function process($user, $message)
     {
-        $this->stdout($message);
-        if (count($this->userList) > 0) {
-                foreach ($this->userList as $u) {
-                    $this->send($u, $message);
-                }
-            } else {
-                $this->send($user, $message);
-            }
+		
+		if($this->isJson($message))
+		{
+			$msg = json_decode($message);
+			if($msg->type=="server")
+			{
+				$this->stdout($message);
+				$this->send($user, json_encode(array("type"=>"mapPool", "mapPool"=> $this->mapPool)));
+			}
+		}
+		else
+		{
+			$this->stdout($message);
+			if (count($this->userList) > 0) {
+				foreach ($this->userList as $u) {
+					$this->send($u, $message);
+				}
+			} else {
+				$this->send($user, $message);
+			}
+		}
     }
-
+protected function isJson($string) {
+ json_decode($string);
+ return (json_last_error() == JSON_ERROR_NONE);
+}
   
   protected function connected ($user) {
     // Do nothing: This is just an echo server, there's no need to track the user.
