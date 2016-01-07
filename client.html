@@ -116,6 +116,13 @@
                 $scope.mapClicked = function (map) {
                     //map.checked = !map.checked;
                     var msg = {
+                        type: "mapPoolChange",
+                        text: map.name + ":" + map.checked,
+                        name: $scope.username,
+                        date: Date.now()
+                    };
+                    $scope.sendMsg(msg);
+                    var msg = {
                         type: "server",
                         text: map.name + ":" + map.checked,
                         name: $scope.username,
@@ -173,21 +180,6 @@
                                         break;
                                     case "mapPoolChange":
                                         $scope.$apply($scope.messageHistory.unshift(msgjson));
-
-                                        var map = msgjson.text.split(":");
-
-
-                                        console.log(map[0] + " is " + map[1]);
-                                        for (var i = 0; i < $scope.items.length; i++)
-                                        {
-
-                                            if ($scope.items[i].name == map[0])
-                                            {
-                                                $scope.$apply($scope.items[i].checked = (map[1] === "true"));
-
-                                            }
-                                        }
-
                                         //$scope.items.push({name:"test",checked:"false"});
 
                                         break;
