@@ -29,22 +29,57 @@ class echoServer extends WebSocketServer {
 		if($this->isJson($message))
 		{
 			$msg = json_decode($message);
+                        /**
+                         * Process server methods
+                         */
 			if($msg->type=="server")
 			{
-				$this->stdout($message);
+                            if($msg->text == "getMapPool")
+                            {
+                                $this->stdout($message);
 				$this->send($user, json_encode(array("type"=>"mapPool", "mapPool"=> $this->mapPool)));
+                            }
+                            else 
+                            {
+                                //EERST DE MAP, DAN DE WAARDE
+                                $map = explode(":",$msg->text);
+                                //$map[0]== map
+                                $map[0];
+                                foreach($this->mapPool as $i => $m)
+                                {
+                                    if($m['name']==$map[0])
+                                    {
+                                       // $m['checked'] = false;//$map[1];
+										$this->mapPool[$i]['checked'] = $map[1] == "true";
+                                    }
+                                }
+                                
+								if (count($this->userList) > 0) {
+                                    foreach ($this->userList as $u) {
+                                           $this->send($u, json_encode(array("type"=>"mapPool", "mapPool"=> $this->mapPool)));
+                                    }
+								}
+                            }
+				
+			}
+			else
+			{
+                            /**
+                             * forward message to clients
+                             */
+                            $this->stdout($message);
+                            if (count($this->userList) > 0) {
+                                    foreach ($this->userList as $u) {
+                                            $this->send($u, $message);
+                                    }
+                            } else {
+                                    $this->send($user, $message);
+                            }
 			}
 		}
 		else
 		{
-			$this->stdout($message);
-			if (count($this->userList) > 0) {
-				foreach ($this->userList as $u) {
-					$this->send($u, $message);
-				}
-			} else {
-				$this->send($user, $message);
-			}
+			$this->send($user, $message);
 		}
     }
 protected function isJson($string) {

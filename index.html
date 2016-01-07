@@ -1,154 +1,418 @@
 <!DOCTYPE html>
 <html ng-app="demo">
 
-<head>
-  <style>
-    a {
-      font-size: 300%;
-    }
-    .marginThisDiv
-    {
-      margin-left:20px;
-    }
-  </style>
-  <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
-  <script data-require="jquery@2.0.1" data-semver="2.0.1" src="http://code.jquery.com/jquery-2.0.1.min.js"></script>
-  <script data-require="jqueryui@1.9.2" data-semver="1.9.2" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
-  <script data-require="angular.js@1.1.5" data-semver="1.1.5" src="http://code.angularjs.org/1.1.5/angular.min.js"></script>
-  <script>
-    angular.module('demo', []).controller('MainCtrl', function(
-      $scope
-    ) {
-		var host = "ws://xijezo.nl:64000"; // SET THIS TO YOUR SERVER
-		$scope.socket = new WebSocket(host);
-      $scope.winner = "??";
-	  $scope.message = "Hello";
-      $scope.items = [{
-        name: 'mirage',
-		checked: true
-      }, {
-        name: 'dust2',
-		checked: true
-      }, {
-        name: 'nuke',
-		checked: true
-      }, {
-        name: 'cobble',
-		checked: true
-      }, {
-        name: 'overpass',
-		checked: true
-      }, {
-        name: 'inferno',
-		checked: true
-      }, {
-        name: 'train',
-		checked: true
-      }, {
-        name: 'cache',
-		checked: true
-      }];
-      $scope.selectMap = function() {
-        var selectedMaps = $(':checkbox').filter(':checked');
-        var winningMapIndex = Math.floor(Math.random() * selectedMaps.length);
-        console.log(selectedMaps[winningMapIndex].value);
-        $scope.winner = selectedMaps[winningMapIndex].value;
-		$scope.message = selectedMaps[winningMapIndex].value;
-		$scope.send();
-      };
-      $scope.SelectNon = function() {
-        $(':checkbox').removeAttr("checked");
-        console.log("selectNON");
-      }
-      $scope.SelectAll = function() {
-        $(':checkbox').prop('checked', "true");
-        console.log("selectAll");
-      }
-	 
-	
-	try {
-		
-		console.log('WebSocket - status '+$scope.socket.readyState);
-		$scope.socket.onopen    = function(msg) { 
-							   console.log("Welcome - status "+this.readyState); 
-						   };
-		$scope.socket.onmessage = function(msg) { 
-		    if(msg.data="")
-		    {
-		      console.log("someone joined");
-		    }else
-		    {
-								$scope.winner = msg.data;
-								$("#winner").html(msg.data);
-							   console.log("Received: "+msg.data); 
-		    }			   
-						   };
-		$scope.socket.onclose   = function(msg) { 
-							   console.log("Disconnected - status "+this.readyState); 
-						   };
-	}
-	catch(ex){ 
-		console.log(ex); 
-	}
-	  
-	  
-	  
-	$scope.send = function(){
-		var txt,msg;
-		//txt = $("msg");
-		msg = $scope.message;//txt.value;
-		if(!msg) { 
-			alert("Message can not be empty"); 
-			return; 
-		}
-		//txt.value="";
-		//txt.focus();
-		try { 
-			$scope.socket.send(msg); 
-			console.log('Sent: '+msg); 
-		} catch(ex) { 
-			console.log(ex); 
-		}
-	}
-	$scope.quit = function(){
-		if (socket != null) {
-			console.log("Goodbye!");
-			$scope.socket.close();
-			socket=null;
-		}
-	}
+    <head>
 
-	$scope.reconnect = function() {
-		quit();
-		init();
-	}
-    });
-  </script>
-</head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<body ng-controller="MainCtrl">
-  <div class="marginThisDiv">
-    <h1>De Frietzaak's map selector</h1> 
-      <div>
-          <button ng-click="SelectAll()">Select All</button>
-          <button ng-click="SelectNon()">Select Non</button>
-      </div>
-      <div ng-repeat="item in items">
-        <label>
-          <input type="checkbox" value="{{item.name}}" checked="{{item.checked}}" id="{{item.name}}" /> 
-          {{item.name}}
-          </label>
-      </div>
-    <p>
-      Winner = <h1 id="winner">{{winner}}</h1>
-      <br/>
-		
-      <button type="button" class="btn btn-default btn-success" aria-label="Left Align" ng-click="selectMap()">
-        <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Click to get a random map
-      </button>
-    </p>
-	<button ng-click="send()"  class="hide"> Send</button>
-  </div>
-</body>
+        <meta name="author" content="De Frietzaak">
+
+        <title>De Frietzaak - Map Chooser</title>
+
+        <!-- Boostrap Styled version -->
+        <link rel="stylesheet" type="text/css" href="bootstrapstyled.min.css">
+
+        <!-- Custom Stylesheet -->
+        <link rel="stylesheet" type="text/css" href="style.css">
+
+        <!-- Jquery, jqueryUI, angular and Jquery.cookie import -->
+        <script data-require="jquery@2.0.1" data-semver="2.0.1" src="http://code.jquery.com/jquery-2.0.1.min.js"></script>
+        <script data-require="jqueryui@1.9.2" data-semver="1.9.2" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+        <script data-require="angular.js@1.1.5" data-semver="1.1.5" src="http://code.angularjs.org/1.1.5/angular.min.js"></script>
+        <script src="jquery.cookie.js" ></script>
+        <script>
+
+            var app = angular.module('demo', []).controller('MainCtrl', function (
+                    $scope
+                    ) {
+                var host = "ws://xijezo.nl:64000"; // SET THIS TO YOUR SERVER
+                //var host = "ws://localhost:64000";
+                $scope.socket = null;
+                $scope.winner = "??";
+                $scope.username = "";
+                var usernameCookie = $.cookie("username");
+                if (typeof usernameCookie === 'undefined')
+                {
+                    $scope.username = "User" + Math.floor(Math.random() * 10000);
+                } else {
+                    $scope.username = usernameCookie;
+                }
+                function sendMessageToClient(message) {
+                    if (!$scope.$$phase) {
+                        $scope.$apply($scope.textmessages.push({
+                            type: "message",
+                            text: message,
+                            name: "System",
+                            date: Date.now()
+                        }));
+                    }
+                    else
+                    {
+                        $scope.textmessages.push({
+                            type: "message",
+                            text: message,
+                            name: "System",
+                            date: Date.now()
+                        });
+                    }
+
+                }
+                $scope.message = "Hello";
+                $scope.messageHistory = [];
+                $scope.textmessages = [];
+                $scope.items = [{
+                        name: 'Mirage',
+                        checked: true
+                    }, {
+                        name: 'DustII',
+                        checked: true
+                    }, {
+                        name: 'Nuke',
+                        checked: true
+                    }, {
+                        name: 'Cobblestone',
+                        checked: true
+                    }, {
+                        name: 'Overpass',
+                        checked: false
+                    }, {
+                        name: 'Inferno',
+                        checked: true
+                    }, {
+                        name: 'Train',
+                        checked: true
+                    }, {
+                        name: 'Cache',
+                        checked: true
+                    }];
+
+                $scope.selectMap = function () {
+                    var selectedMaps = $(':checkbox').filter(':checked');
+                    var winningMapIndex = Math.floor(Math.random() * selectedMaps.length);
+                    console.log(selectedMaps[winningMapIndex].value);
+                    $scope.winner = selectedMaps[winningMapIndex].value;
+                    $scope.message = selectedMaps[winningMapIndex].value;
+
+                    var msg = {
+                        type: "mapPicked",
+                        text: $scope.winner,
+                        name: $scope.username,
+                        date: Date.now()
+                    };
+                    console.log(msg);
+                    $scope.sendMsg(msg);
+
+                };
+                $scope.SelectNon = function () {
+                    $(':checkbox').removeAttr("checked");
+                    console.log("selectNON");
+                };
+                $scope.SelectAll = function () {
+                    $(':checkbox').prop('checked', "true");
+                    console.log("selectAll");
+                };
+                $scope.mapClicked = function (map) {
+                    //map.checked = !map.checked;
+                    var msg = {
+                        type: "server",
+                        text: map.name + ":" + map.checked,
+                        name: $scope.username,
+                        date: Date.now()
+                    };
+                    $scope.sendMsg(msg);
+                    console.log(map.checked);
+                };
+                $scope.timestampToDate = function (timestamp)
+                {
+                    var time = new Date(timestamp);
+                    var timeStr = time.toLocaleTimeString();
+                    console.log(timestampToDate);
+                    return timeStr;
+                };
+
+                $scope.init = function () {
+                    try {
+                        $scope.socket = new WebSocket(host);
+                        //console.log('WebSocket - status ' + $scope.socket.readyState);
+                        sendMessageToClient('WebSocket - status ' + $scope.socket.readyState + '. Starting up...');
+                        $scope.socket.onopen = function (msg) {
+                            //console.log("Welcome - status " + this.readyState);
+                            sendMessageToClient("Welcome - status " + this.readyState + '. Connected!');
+                            $scope.getMapPool();
+                        };
+
+                        $scope.socket.onmessage = function (msg) {
+                            if (msg.data === "")
+                            {
+                                console.log("someone joined");
+                            } else
+                            {
+
+                                var msgjson = JSON.parse(event.data);
+                                var time = new Date(msgjson.date);
+                                var timeStr = time.toLocaleTimeString();
+                                switch (msgjson.type) {
+                                    case "id":
+                                        clientID = msgjson.id;
+                                        //setUsername();
+                                        break;
+                                    case "mapPicked":
+                                        text = "<b>User <em>" + msgjson.name + "</em> signed in at " + timeStr + "</b><br>";
+                                        $scope.winner = msgjson.text;
+                                        $("#winner").text(msgjson.text);
+                                        $scope.$apply($scope.messageHistory.unshift(msgjson));
+                                        console.log($scope.messageHistory);
+                                        break;
+                                    case "message":
+                                        text = "(" + timeStr + ") <b>" + msgjson.name + "</b>: " + msgjson.text + "<br>";
+                                        $scope.$apply($scope.textmessages.push(msgjson));
+                                        var textdiv = document.getElementById("chatmessages");
+                                        textdiv.scrollTop = textdiv.scrollHeight;
+                                        break;
+                                    case "mapPoolChange":
+                                        $scope.$apply($scope.messageHistory.unshift(msgjson));
+
+                                        var map = msgjson.text.split(":");
+
+
+                                        console.log(map[0] + " is " + map[1]);
+                                        for (var i = 0; i < $scope.items.length; i++)
+                                        {
+
+                                            if ($scope.items[i].name == map[0])
+                                            {
+                                                $scope.$apply($scope.items[i].checked = (map[1] === "true"));
+
+                                            }
+                                        }
+
+                                        //$scope.items.push({name:"test",checked:"false"});
+
+                                        break;
+                                    case "userlist":
+                                        var ul = "";
+                                        for (i = 0; i < msgjson.users.length; i++) {
+                                            ul += msgjson.users[i] + "<br>";
+                                        }
+                                        document.getElementById("userlistbox").innerHTML = ul;
+                                        break;
+                                    case "mapPool":
+                                     $scope.$apply($scope.items = msgjson.mapPool);
+                                    break;    
+                                }
+                                console.log($scope.items);
+                                console.log("Received: ");
+                                console.log(msgjson);
+
+                            }
+                        };
+                        $scope.socket.onclose = function (msg) {
+                            //console.log("Disconnected - status " + this.readyState);
+                            sendMessageToClient("Disconnected - status " + this.readyState);
+                        };
+                    }
+                    catch (ex) {
+                        console.log(ex);
+                    }
+                };
+
+                $scope.init();
+
+                $scope.sendMsg = function (msg) {
+                    //var txt,msg;
+                    //txt = $("msg");
+                    //msg = $scope.message;//txt.value;
+
+                    if (!msg) {
+                        alert("Message can not be empty");
+                        return;
+                    }
+                    //txt.value="";
+                    //txt.focus();
+                    try {
+                        $scope.socket.send(JSON.stringify(msg));
+                        console.log('Sent: ');
+                        console.log(msg);
+                    } catch (ex) {
+                        console.log(ex);
+                    }
+                };
+                $scope.getMapPool = function(){
+                    var msg = {
+                        type: "server",
+                        text: "getMapPool",
+                        name:   $scope.username,
+                        date: Date.now()
+                      };
+                      $scope.sendMsg(msg);
+                  }
+                $scope.sendMessage = function () {
+                    var inputbox = document.getElementById("messageInput");
+                    if (inputbox.value != "")
+                    {
+
+
+                        var msg = {
+                            type: "message",
+                            text: inputbox.value,
+                            name: $scope.username,
+                            date: Date.now()
+                        };
+
+                        $scope.socket.send(JSON.stringify(msg));
+                        inputbox.value = "";
+                    }
+
+                };
+
+                $scope.saveUserName = function () {
+                    $.cookie("username", $scope.username, {expires: 100});
+
+                };
+
+                $scope.quit = function () {
+                    if ($scope.socket != null) {
+                        console.log("Goodbye!");
+
+                        $scope.socket.close();
+                        $scope.socket = null;
+                    }
+                };
+
+                $scope.reconnect = function () {
+                    $scope.quit();
+                    $scope.init();
+                };
+
+            });
+
+            app.directive('ngEnter', function () {
+                return function (scope, element, attrs) {
+                    element.bind("keydown keypress", function (event) {
+                        if (event.which === 13) {
+                            scope.$apply(function () {
+                                scope.$eval(attrs.ngEnter);
+                            });
+
+                            event.preventDefault();
+                        }
+                    });
+                };
+            });
+
+
+        </script>
+
+    </head>
+
+    <body ng-controller="MainCtrl">
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Map Selector</a>
+                </div>
+                <div id="navbar" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="#">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Git</a></li>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
+        <div class="spacefiller"></div>
+        <div class="container">
+            <h1>De Frietzaak's map selector</h1>
+              <div class="form-group">
+                        <label>Username</label>
+                        <div class="input-group">
+                            <input id="messageInput username" type="textbox" class="form-control" placeholder="Username" ng-model="username">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button" ng-click="saveUserName()" >Save</button>
+
+                            </span>
+                        </div>
+                    </div>
+            <div class="row"> 
+                <div class="col-md-6">
+                    <h2>Maps</h2>
+                    <div ng-repeat="item in items" class="checkbox">
+                        <label >
+                            <input type="checkbox" value="{{item.name}}"  id="{{item.name}}" ng-model="item.checked"  ng-change="mapClicked(item)"/> 
+                            {{item.name}}
+                        </label>
+                    </div>
+                    <button ng-click="SelectAll()" class="btn btn-success">Select All</button>
+                    <button ng-click="SelectNon()" class="btn btn-danger">Select Non</button>
+
+
+                    <hr />
+
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Winner</h3>
+                        </div>
+                        <div class="panel-body">
+                            <h1 id="winner">{{winner}}</h1>
+                        </div>
+                    </div>
+
+
+
+
+                    <button type="button" class="btn btn-default btn-success" aria-label="Left Align" ng-click="selectMap()">
+                        Click to get a random map
+                    </button>
+
+                </div>
+                <div class="col-md-6">
+                    <!-- <hr /> -->
+                    <h2>Chat</h2>
+                    <div class="chatbox">
+                        <div class="chatmessages" id="chatmessages">
+                            <div ng-repeat="um in textmessages">
+                                {{um.name}}: {{um.text}}<br/>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <input id="messageInput" type="textbox" class="form-control" placeholder="Bericht" ng-enter="sendMessage()">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button" ng-click="sendMessage()">Verstuur</button>
+                                <button class="btn btn-warning" type="button" ng-click="reconnect()">Reconnect</button>
+                                <button class="btn btn-danger" type="button" ng-click="quit()">Disconnect</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <button ng-click="send()"  class="hide"> Send</button> -->
+            <hr />
+            <h2>History</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td>Name</td>
+                        <td>Map</td>
+                        <td>Timestamp</td>
+                    </tr>
+                </thead>
+                <tr ng-repeat="m in messageHistory">
+                    <td>{{m.name}}</td>
+                    <td>{{m.text}}</td>
+                    <td>{{m.date}}</td>
+                </tr>
+            </table>
+        </div>
+
+
+    </body>
 
 </html>

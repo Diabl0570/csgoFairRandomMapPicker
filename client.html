@@ -116,7 +116,7 @@
                 $scope.mapClicked = function (map) {
                     //map.checked = !map.checked;
                     var msg = {
-                        type: "mapPoolChange",
+                        type: "server",
                         text: map.name + ":" + map.checked,
                         name: $scope.username,
                         date: Date.now()
@@ -140,6 +140,7 @@
                         $scope.socket.onopen = function (msg) {
                             //console.log("Welcome - status " + this.readyState);
                             sendMessageToClient("Welcome - status " + this.readyState + '. Connected!');
+                            $scope.getMapPool();
                         };
 
                         $scope.socket.onmessage = function (msg) {
@@ -197,6 +198,9 @@
                                         }
                                         document.getElementById("userlistbox").innerHTML = ul;
                                         break;
+                                    case "mapPool":
+                                     $scope.$apply($scope.items = msgjson.mapPool);
+                                    break;    
                                 }
                                 console.log($scope.items);
                                 console.log("Received: ");
@@ -235,7 +239,15 @@
                         console.log(ex);
                     }
                 };
-
+                $scope.getMapPool = function(){
+                    var msg = {
+                        type: "server",
+                        text: "getMapPool",
+                        name:   $scope.username,
+                        date: Date.now()
+                      };
+                      $scope.sendMsg(msg);
+                  }
                 $scope.sendMessage = function () {
                     var inputbox = document.getElementById("messageInput");
                     if (inputbox.value != "")
@@ -331,14 +343,6 @@
                     </div>
             <div class="row"> 
                 <div class="col-md-6">
-
-                  
-
-
-
-
-
-
                     <h2>Maps</h2>
                     <div ng-repeat="item in items" class="checkbox">
                         <label >
