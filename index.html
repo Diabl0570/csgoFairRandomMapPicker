@@ -12,23 +12,23 @@
         <title>De Frietzaak - Map Chooser</title>
 
         <!-- Boostrap Styled version -->
-        <link rel="stylesheet" type="text/css" href="bootstrapstyled.min.css">
+        <link rel="stylesheet" type="text/css" href="css/bootstrapstyled.min.css">
 
         <!-- Custom Stylesheet -->
-        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="css/style.css">
 
         <!-- Jquery, jqueryUI, angular and Jquery.cookie import -->
         <script data-require="jquery@2.0.1" data-semver="2.0.1" src="http://code.jquery.com/jquery-2.0.1.min.js"></script>
         <script data-require="jqueryui@1.9.2" data-semver="1.9.2" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
         <script data-require="angular.js@1.1.5" data-semver="1.1.5" src="http://code.angularjs.org/1.1.5/angular.min.js"></script>
-        <script src="jquery.cookie.js" ></script>
+        <script src="js/jquery.cookie.js" ></script>
         <script>
 
             var app = angular.module('demo', []).controller('MainCtrl', function (
                     $scope
                     ) {
-                var host = "ws://xijezo.nl:64000"; // SET THIS TO YOUR SERVER
-                //var host = "ws://localhost:64000";
+                //var host = "ws://xijezo.nl:64000"; // SET THIS TO YOUR SERVER
+                var host = "ws://localhost:64000";
                 $scope.socket = null;
                 $scope.winner = "??";
                 $scope.username = "";
@@ -131,11 +131,11 @@
                     $scope.sendMsg(msg);
                     console.log(map.checked);
                 };
-                $scope.timestampToDate = function (timestamp)
+                function timestampToDate(timestamp)
                 {
                     var time = new Date(timestamp);
                     var timeStr = time.toLocaleTimeString();
-                    console.log(timestampToDate);
+                    //console.log(timestampToDate);
                     return timeStr;
                 };
 
@@ -167,8 +167,11 @@
                                         break;
                                     case "mapPicked":
                                         text = "<b>User <em>" + msgjson.name + "</em> signed in at " + timeStr + "</b><br>";
+                                        
                                         $scope.winner = msgjson.text;
                                         $("#winner").text(msgjson.text);
+                                        msgjson.text = "Winning: "+msgjson.text;
+                                        msgjson.date = timestampToDate(msgjson.date);
                                         $scope.$apply($scope.messageHistory.unshift(msgjson));
                                         console.log($scope.messageHistory);
                                         break;
@@ -179,6 +182,18 @@
                                         textdiv.scrollTop = textdiv.scrollHeight;
                                         break;
                                     case "mapPoolChange":
+                                        var values = msgjson.text;
+                                        var res = values.split(":");
+                                        if(res[1] == "true")
+                                        {
+                                            msgjson.text = "Selected: "+res[0];
+                                            
+                                        }
+                                        else {
+                                            msgjson.text = "Deselected: "+res[0];
+                                           
+                                        }
+                                        msgjson.date = timestampToDate(msgjson.date);
                                         $scope.$apply($scope.messageHistory.unshift(msgjson));
                                         //$scope.items.push({name:"test",checked:"false"});
 
@@ -388,11 +403,11 @@
             <!-- <button ng-click="send()"  class="hide"> Send</button> -->
             <hr />
             <h2>History</h2>
-            <table class="table">
+            <table class="table" >
                 <thead>
                     <tr>
                         <td>Name</td>
-                        <td>Map</td>
+                        <td>Action</td>
                         <td>Timestamp</td>
                     </tr>
                 </thead>
