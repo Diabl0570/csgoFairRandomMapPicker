@@ -28,7 +28,7 @@
                     $scope
                     ) {
                 //var host = "ws://xijezo.nl:64000"; // SET THIS TO YOUR SERVER
-                var host = "ws://localhost:64000";
+                var host = "ws://xijezo.nl:64000";
                 $scope.socket = null;
                 $scope.winner = "??";
                 $scope.username = "";
@@ -157,7 +157,7 @@
                             } else
                             {
 
-                                var msgjson = JSON.parse(event.data);
+                                var msgjson = JSON.parse(msg.data);
                                 var time = new Date(msgjson.date);
                                 var timeStr = time.toLocaleTimeString();
                                 switch (msgjson.type) {

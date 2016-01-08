@@ -39,6 +39,33 @@ class echoServer extends WebSocketServer {
                                 $this->stdout($message);
 				$this->send($user, json_encode(array("type"=>"mapPool", "mapPool"=> $this->mapPool)));
                             }
+                            else if($msg->text == "mapPoolSelectNone")
+                            {
+                                $this->stdout($message);
+                                foreach($this->mapPool as $i => $m)
+                                {
+                                    $this->mapPool[$i]['checked'] = false;
+                                }
+				if (count($this->userList) > 0) {
+                                    foreach ($this->userList as $u) {
+                                           $this->send($u, json_encode(array("type"=>"mapPool", "mapPool"=> $this->mapPool)));
+                                    }
+				}
+                            }
+                            else if($msg->text == "mapPoolSelectAll")
+                            {
+                                $this->stdout($message);
+                                foreach($this->mapPool as $i => $m)
+                                {
+                                    $this->mapPool[$i]['checked'] = true;
+                                }
+				
+                                if (count($this->userList) > 0) {
+                                    foreach ($this->userList as $u) {
+                                           $this->send($u, json_encode(array("type"=>"mapPool", "mapPool"=> $this->mapPool)));
+                                    }
+				}
+                            }
                             else 
                             {
                                 //EERST DE MAP, DAN DE WAARDE
@@ -54,11 +81,11 @@ class echoServer extends WebSocketServer {
                                     }
                                 }
                                 
-								if (count($this->userList) > 0) {
+				if (count($this->userList) > 0) {
                                     foreach ($this->userList as $u) {
                                            $this->send($u, json_encode(array("type"=>"mapPool", "mapPool"=> $this->mapPool)));
                                     }
-								}
+				}
                             }
 				
 			}
