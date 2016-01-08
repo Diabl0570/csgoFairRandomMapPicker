@@ -106,11 +106,25 @@
 
                 };
                 $scope.SelectNon = function () {
-                    $(':checkbox').removeAttr("checked");
+                    
+                    var msg = {
+                        type: "server",
+                        text: "mapPoolSelectNone",
+                        name: $scope.username,
+                        date: Date.now()
+                    };
+                    $scope.sendMsg(msg);
                     console.log("selectNON");
                 };
                 $scope.SelectAll = function () {
-                    $(':checkbox').prop('checked', "true");
+                    
+                    var msg = {
+                        type: "server",
+                        text: "mapPoolSelectAll",
+                        name: $scope.username,
+                        date: Date.now()
+                    };
+                    $scope.sendMsg(msg);
                     console.log("selectAll");
                 };
                 $scope.mapClicked = function (map) {
@@ -137,7 +151,8 @@
                     var timeStr = time.toLocaleTimeString();
                     //console.log(timestampToDate);
                     return timeStr;
-                };
+                }
+                ;
 
                 $scope.init = function () {
                     try {
@@ -167,10 +182,10 @@
                                         break;
                                     case "mapPicked":
                                         text = "<b>User <em>" + msgjson.name + "</em> signed in at " + timeStr + "</b><br>";
-                                        
+
                                         $scope.winner = msgjson.text;
                                         $("#winner").text(msgjson.text);
-                                        msgjson.text = "Winning: "+msgjson.text;
+                                        msgjson.text = "Winning: " + msgjson.text;
                                         msgjson.date = timestampToDate(msgjson.date);
                                         $scope.$apply($scope.messageHistory.unshift(msgjson));
                                         console.log($scope.messageHistory);
@@ -184,14 +199,14 @@
                                     case "mapPoolChange":
                                         var values = msgjson.text;
                                         var res = values.split(":");
-                                        if(res[1] == "true")
+                                        if (res[1] == "true")
                                         {
-                                            msgjson.text = "Selected: "+res[0];
-                                            
+                                            msgjson.text = "Selected: " + res[0];
+
                                         }
                                         else {
-                                            msgjson.text = "Deselected: "+res[0];
-                                           
+                                            msgjson.text = "Deselected: " + res[0];
+
                                         }
                                         msgjson.date = timestampToDate(msgjson.date);
                                         $scope.$apply($scope.messageHistory.unshift(msgjson));
@@ -206,8 +221,8 @@
                                         document.getElementById("userlistbox").innerHTML = ul;
                                         break;
                                     case "mapPool":
-                                     $scope.$apply($scope.items = msgjson.mapPool);
-                                    break;    
+                                        $scope.$apply($scope.items = msgjson.mapPool);
+                                        break;
                                 }
                                 console.log($scope.items);
                                 console.log("Received: ");
@@ -246,15 +261,15 @@
                         console.log(ex);
                     }
                 };
-                $scope.getMapPool = function(){
+                $scope.getMapPool = function () {
                     var msg = {
                         type: "server",
                         text: "getMapPool",
-                        name:   $scope.username,
+                        name: $scope.username,
                         date: Date.now()
-                      };
-                      $scope.sendMsg(msg);
-                  }
+                    };
+                    $scope.sendMsg(msg);
+                };
                 $scope.sendMessage = function () {
                     var inputbox = document.getElementById("messageInput");
                     if (inputbox.value != "")
@@ -338,16 +353,16 @@
         <div class="spacefiller"></div>
         <div class="container">
             <h1>De Frietzaak's map selector</h1>
-              <div class="form-group">
-                        <label>Username</label>
-                        <div class="input-group">
-                            <input id="messageInput username" type="textbox" class="form-control" placeholder="Username" ng-model="username">
-                            <span class="input-group-btn">
-                                <button class="btn btn-default" type="button" ng-click="saveUserName()" >Save</button>
+            <div class="form-group">
+                <label>Username</label>
+                <div class="input-group">
+                    <input id="messageInput username" type="textbox" class="form-control" placeholder="Username" ng-model="username">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="saveUserName()" >Save</button>
 
-                            </span>
-                        </div>
-                    </div>
+                    </span>
+                </div>
+            </div>
             <div class="row"> 
                 <div class="col-md-6">
                     <h2>Maps</h2>
